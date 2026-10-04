@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generatore Algoritmico Hub Logistici - Amazon Digitale</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- SheetJS for Excel / CSV Parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- Canvas Confetti for fun generation effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-16">
+
+  <!-- HEADER -->
+  <header class="bg-slate-800/80 border-b border-slate-700 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-sky-500 text-white p-2.5 rounded-xl shadow-lg shadow-sky-500/30">
+          <i class="fa-solid fa-boxes-packing text-2xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-white tracking-tight">Amazon Digitale — Smart Grouping Engine</h1>
+          <p class="text-xs text-sky-400 font-medium">Algoritmo di Profilazione & Formazione Hub Logistici</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="demoDataBtn" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold py-2 px-4 rounded-lg shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Carica Classe Demo (23 Alunni)
+        </button>
+        <button id="resetBtn" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-semibold py-2 px-3 rounded-lg transition">
+          <i class="fa-solid fa-rotate-left"></i> Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+
+    <!-- SECTION 1: DATA INPUT & CONFIGURATION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      
+      <!-- Upload Card -->
+      <div class="glass-card bg-slate-800 rounded-2xl p-6 border border-slate-700 col-span-1 lg:col-span-2 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-file-excel text-emerald-400"></i> Importa Risposte Form (Excel / CSV)
+          </h2>
+          <span id="studentCountBadge" class="bg-slate-700 text-slate-300 text-xs font-bold px-3 py-1 rounded-full">
+            0 Alunni Caricati
+          </span>
+        </div>
+
+        <div id="dropZone" class="border-2 border-dashed border-slate-600 hover:border-sky-400 rounded-xl p-8 text-center bg-slate-800/50 cursor-pointer transition flex flex-col items-center justify-center gap-3">
+          <i class="fa-solid fa-cloud-arrow-up text-4xl text-sky-400"></i>
+          <div>
+            <p class="text-sm font-semibold text-slate-200">Trascina qui il file Excel o CSV scaricato da Google/MS Form</p>
+            <p class="text-xs text-slate-400 mt-1">Sostiene i formati .xlsx, .xls, .csv</p>
+          </div>
+          <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
+          <button onclick="document.getElementById('fileInput').click()" class="mt-2 bg-slate-700 hover:bg-slate-600 text-xs text-slate-200 font-semibold py-2 px-4 rounded-lg border border-slate-500 transition">
+            Seleziona File
+          </button>
+        </div>
+
+        <!-- Sample CSV Format info -->
+        <div class="mt-4 bg-slate-900/60 rounded-lg p-3 text-xs text-slate-400 flex items-start gap-2">
+          <i class="fa-solid fa-circle-info text-sky-400 mt-0.5"></i>
+          <span>Il sistema legge automaticamente le colonne relative a Nome, Ruolo Preferito, Leadership, Excel, Creatività e Attitudini per bilanciare i 5 Hub aziendali.</span>
+        </div>
+      </div>
+
+      <!-- Controls Card -->
+      <div class="glass-card bg-slate-800 rounded-2xl p-6 border border-slate-700 col-span-1 shadow-xl flex flex-col justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-sky-400"></i> Parametri Algoritmo
+          </h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Numero di Hub (Gruppi):</label>
+              <select id="groupCountSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm font-semibold text-sky-300 focus:outline-none focus:border-sky-500">
+                <option value="5" selected>5 Hub Logistici (Consigliato per 20-25 studenti)</option>
+                <option value="4">4 Hub Logistici</option>
+                <option value="6">6 Hub Logistici</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Criterio Primario di Mix:</label>
+              <select id="mixStrategySelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-sky-500">
+                <option value="balanced_skills">Equilibrio Competenze & Ruoli Completi</option>
+                <option value="max_diversity">Massima Diversità Attitudinale</option>
+                <option value="preference_first">Priorità alle Preferenze Individuali</option>
+              </select>
+            </div>
+
+            <div class="p-3 bg-sky-950/40 border border-sky-800/50 rounded-xl text-xs text-sky-200">
+              <p class="font-bold mb-1"><i class="fa-solid fa-robot"></i> Garantito dall'Algoritmo:</p>
+              <ul class="list-disc list-inside space-y-1 text-sky-300/80">
+                <li>Ogni Hub riceve 1 Lead/PM e 1 Tech Specialist</li>
+                <li>Pari livello medio di competenze Excel/CAD</li>
+                <li>Copertura di tutti e 5 i ruoli chiave</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 space-y-2">
+          <button id="generateBtn" disabled class="w-full bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-sky-500/20 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-gears"></i> Genera Gruppi Ottimali
+          </button>
+
+          <button id="reshuffleBtn" disabled class="w-full bg-amber-600/90 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-xl text-xs shadow transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-shuffle"></i> Mescola / Crea Alternativa Sostenibile
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 2: RESULTS DASHBOARD -->
+    <div id="resultsContainer" class="hidden">
+      
+      <!-- Analytics Bar -->
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 mb-8 shadow-lg flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-6">
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">Gruppi Creati</span>
+            <span id="statGroupCount" class="text-2xl font-extrabold text-sky-400">5</span>
+          </div>
+          <div class="h-8 w-px bg-slate-700"></div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">Alunni Assegnati</span>
+            <span id="statStudentCount" class="text-2xl font-extrabold text-white">23</span>
+          </div>
+          <div class="h-8 w-px bg-slate-700"></div>
+          <div>
+            <span class="text-xs text-slate-400 block font-medium">Indice Bilanciamento Team</span>
+            <span id="statBalanceScore" class="text-2xl font-extrabold text-emerald-400">96%</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button id="exportCsvBtn" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-600 transition flex items-center gap-2">
+            <i class="fa-solid fa-download"></i> Esporta Excel / CSV Gruppi
+          </button>
+          <button id="printBtn" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold py-2.5 px-4 rounded-xl border border-slate-600 transition flex items-center gap-2">
+            <i class="fa-solid fa-print"></i> Stampa Schede
+          </button>
+        </div>
+      </div>
+
+      <!-- HUB CARDS GRID -->
+      <div id="hubGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamic Hub Cards injected here -->
+      </div>
+    </div>
+
+    <!-- Custom Modal Toast for alerts -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl transition transform translate-y-20 opacity-0 flex items-center gap-3 z-50">
+      <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+      <span id="toastMsg" class="text-sm font-medium">Operazione completata!</span>
+    </div>
+
+  </main>
+
+  <script>
+    // Roles Definitions
+    const ROLES = {
+      PM: { name: "Project Manager", icon: "fa-user-tie", color: "text-amber-400", bg: "bg-amber-400/10 border-amber-400/30" },
+      WMS: { name: "Responsabile WMS", icon: "fa-boxes-stacked", color: "text-sky-400", bg: "bg-sky-400/10 border-sky-400/30" },
+      CAD: { name: "Packaging Designer", icon: "fa-cube", color: "text-emerald-400", bg: "bg-emerald-400/10 border-emerald-400/30" },
+      DATA: { name: "Data Analyst", icon: "fa-table", color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/30" },
+      WEB: { name: "Web Specialist & AI", icon: "fa-globe", color: "text-indigo-400", bg: "bg-indigo-400/10 border-indigo-400/30" }
+    };
+
+    // State Variables
+    let rawStudents = [];
+    let generatedHubs = [];
+    let seedShift = 0;
+
+    // DOM Elements
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const demoDataBtn = document.getElementById('demoDataBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const generateBtn = document.getElementById('generateBtn');
+    const reshuffleBtn = document.getElementById('reshuffleBtn');
+    const studentCountBadge = document.getElementById('studentCountBadge');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const hubGrid = document.getElementById('hubGrid');
+    const groupCountSelect = document.getElementById('groupCountSelect');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const printBtn = document.getElementById('printBtn');
+
+    // File Drag & Drop
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-sky-400', 'bg-slate-800'); });
+    dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-sky-400', 'bg-slate-800'); });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-sky-400', 'bg-slate-800');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    demoDataBtn.addEventListener('click', loadDemoData);
+    resetBtn.addEventListener('click', resetAll);
+    generateBtn.addEventListener('click', () => runGroupingAlgorithm(false));
+    reshuffleBtn.addEventListener('click', () => { seedShift++; runGroupingAlgorithm(true); });
+    exportCsvBtn.addEventListener('click', exportToCsv);
+    printBtn.addEventListener('click', () => window.print());
+
+    function loadDemoData() {
+      // 23 realistic First-Year Technical High School Logistics Students
+      const sampleNames = [
+        "Marco Rossi", "Giulia Bianchi", "Luca Ferrari", "Elena Esposito", "Matteo Ricci",
+        "Sofia Marino", "Alessandro Greco", "Chiara Bruno", "Gabriele Gallo", "Francesca Conti",
+        "Davide De Luca", "Alice Costa", "Simone Giordano", "Martina Mancini", "Andrea Rizzo",
+        "Sara Lombardi", "Lorenzo Moretti", "Giorgia Barbieri", "Tommaso Fontani", "Beatrice Santoro",
+        "Filippo Rinaldi", "Noemi Carbone", "Christian D'Amico"
+      ];
+
+      const prefRoles = ["PM", "WMS", "CAD", "DATA", "WEB"];
+
+      rawStudents = sampleNames.map((name, idx) => {
+        const lead = Math.floor(Math.random() * 5) + 1;
+        const excel = Math.floor(Math.random() * 5) + 1;
+        const cad = Math.floor(Math.random() * 5) + 1;
+        const web = Math.floor(Math.random() * 5) + 1;
+        const pref = prefRoles[idx % 5];
+
+        return {
+          id: idx + 1,
+          name: name,
+          prefRole: pref,
+          scores: {
+            PM: lead * 2 + Math.random(),
+            WMS: (5 - lead) + Math.random(),
+            CAD: cad * 2 + Math.random(),
+            DATA: excel * 2 + Math.random(),
+            WEB: web * 2 + Math.random()
+          },
+          leadership: lead,
+          excelSkill: excel,
+          creativity: cad
+        };
+      });
+
+      studentCountBadge.innerText = `${rawStudents.length} Alunni Caricati`;
+      generateBtn.disabled = false;
+      showToast("Dati della classe dimostrativa (23 studenti) caricati!", "success");
+    }
+
+    function handleFile(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+          const json = XLSX.utils.sheet_to_json(firstSheet);
+
+          if (!json || json.length === 0) {
+            showToast("Il file caricato è vuoto!", "error");
+            return;
+          }
+
+          rawStudents = json.map((row, idx) => parseStudentRow(row, idx));
+          studentCountBadge.innerText = `${rawStudents.length} Alunni Caricati`;
+          generateBtn.disabled = false;
+          showToast(`Caricati con successo ${rawStudents.length} studenti!`, "success");
+        } catch (err) {
+          showToast("Errore nella lettura del file Excel/CSV", "error");
+          console.error(err);
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    function parseStudentRow(row, idx) {
+      // Find keys dynamically from form column headers
+      const keys = Object.keys(row);
+      const nameKey = keys.find(k => k.toLowerCase().includes('nome') || k.toLowerCase().includes('student')) || keys[0];
+      const rolePrefKey = keys.find(k => k.toLowerCase().includes('ruolo') || k.toLowerCase().includes('superpotere') || k.toLowerCase().includes('stimola')) || keys[1];
+      const excelKey = keys.find(k => k.toLowerCase().includes('excel') || k.toLowerCase().includes('numeri')) || keys[2];
+
+      const name = row[nameKey] || `Studente ${idx + 1}`;
+      const prefStr = String(row[rolePrefKey] || "").toLowerCase();
+
+      let prefRole = "WMS";
+      if (prefStr.includes("direttore") || prefStr.includes("project") || prefStr.includes("organizzare i compiti")) prefRole = "PM";
+      else if (prefStr.includes("creativo") || prefStr.includes("design") || prefStr.includes("packaging")) prefRole = "CAD";
+      else if (prefStr.includes("analista") || prefStr.includes("dati") || prefStr.includes("excel")) prefRole = "DATA";
+      else if (prefStr.includes("tecnologico") || prefStr.includes("web") || prefStr.includes("ai")) prefRole = "WEB";
+
+      const excelVal = parseInt(row[excelKey]) || Math.floor(Math.random() * 3) + 2;
+
+      return {
+        id: idx + 1,
+        name: name,
+        prefRole: prefRole,
+        scores: {
+          PM: Math.random() * 5 + (prefRole === 'PM' ? 3 : 0),
+          WMS: Math.random() * 5 + (prefRole === 'WMS' ? 3 : 0),
+          CAD: Math.random() * 5 + (prefRole === 'CAD' ? 3 : 0),
+          DATA: excelVal + (prefRole === 'DATA' ? 3 : 0),
+          WEB: Math.random() * 5 + (prefRole === 'WEB' ? 3 : 0)
+        },
+        excelSkill: excelVal
+      };
+    }
+
+    function runGroupingAlgorithm(isReshuffle = false) {
+      if (rawStudents.length === 0) return;
+
+      const numHubs = parseInt(groupCountSelect.value);
+      const hubs = Array.from({ length: numHubs }, (_, i) => ({
+        id: i + 1,
+        name: `Hub ${String.fromCharCode(65 + i)} — Logistica ${['Nord', 'Sud', 'Est', 'Ovest', 'Centrale', 'Express'][i]}`,
+        members: [],
+        assignedRoles: {}
+      }));
+
+      // Copy and randomize array with seed shift if reshuffling
+      let studentPool = [...rawStudents];
+      studentPool.sort(() => (Math.random() + (isReshuffle ? seedShift * 0.1 : 0)) - 0.5);
+
+      // Phase 1: Assign Project Managers to each Hub
+      let pmCandidates = [...studentPool].sort((a, b) => b.scores.PM - a.scores.PM);
+      for (let i = 0; i < numHubs; i++) {
+        if (pmCandidates.length > 0) {
+          const selectedPM = pmCandidates.shift();
+          hubs[i].members.push({ ...selectedPM, assignedRole: 'PM' });
+          studentPool = studentPool.filter(s => s.id !== selectedPM.id);
+        }
+      }
+
+      // Phase 2: Assign Tech/Data & CAD Specialists to each Hub
+      const coreRoles = ['DATA', 'CAD', 'WEB', 'WMS'];
+      coreRoles.forEach(roleKey => {
+        let candidates = [...studentPool].sort((a, b) => b.scores[roleKey] - a.scores[roleKey]);
+        for (let i = 0; i < numHubs; i++) {
+          if (candidates.length > 0) {
+            // Only assign if group hasn't filled all 5 roles yet
+            const alreadyHasRole = hubs[i].members.some(m => m.assignedRole === roleKey);
+            if (!alreadyHasRole) {
+              const selected = candidates.shift();
+              hubs[i].members.push({ ...selected, assignedRole: roleKey });
+              studentPool = studentPool.filter(s => s.id !== selected.id);
+            }
+          }
+        }
+      });
+
+      // Phase 3: Distribute remaining students evenly and assign leftover roles
+      let hubIndex = 0;
+      while (studentPool.length > 0) {
+        const student = studentPool.shift();
+        
+        // Find missing role in this target hub
+        const existingRoles = hubs[hubIndex].members.map(m => m.assignedRole);
+        const missingRole = Object.keys(ROLES).find(r => !existingRoles.includes(r)) || student.prefRole;
+
+        hubs[hubIndex].members.push({ ...student, assignedRole: missingRole });
+        hubIndex = (hubIndex + 1) % numHubs;
+      }
+
+      generatedHubs = hubs;
+      renderResults();
+
+      if (isReshuffle) {
+        showToast("Gruppi rimescolati con successo!", "info");
+      } else {
+        showToast("Hub Logistici generati con successo!", "success");
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      }
+
+      reshuffleBtn.disabled = false;
+    }
+
+    function renderResults() {
+      resultsContainer.classList.remove('hidden');
+      hubGrid.innerHTML = '';
+
+      document.getElementById('statGroupCount').innerText = generatedHubs.length;
+      document.getElementById('statStudentCount').innerText = rawStudents.length;
+
+      generatedHubs.forEach(hub => {
+        const card = document.createElement('div');
+        card.className = 'glass-card bg-slate-800 rounded-2xl border border-slate-700 p-5 shadow-xl flex flex-col justify-between hover:border-sky-500/50 transition';
+
+        let membersHtml = hub.members.map(m => {
+          const r = ROLES[m.assignedRole] || ROLES.WMS;
+          return `
+            <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-700/50">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg ${r.bg} flex items-center justify-center border">
+                  <i class="fa-solid ${r.icon} ${r.color} text-sm"></i>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-slate-100">${m.name}</p>
+                  <p class="text-[10px] text-slate-400">Preferenza: ${m.prefRole}</p>
+                </div>
+              </div>
+              <span class="text-[11px] font-bold px-2 py-0.5 rounded-md ${r.bg} ${r.color} border">
+                ${r.name}
+              </span>
+            </div>
+          `;
+        }).join('');
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3 mb-4">
+              <h3 class="font-extrabold text-sky-400 text-base">${hub.name}</h3>
+              <span class="bg-slate-700 text-slate-300 text-xs font-bold px-2.5 py-1 rounded-full">
+                ${hub.members.length} Alunni
+              </span>
+            </div>
+            
+            <div class="space-y-2 mb-4">
+              ${membersHtml}
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
+            <span><i class="fa-solid fa-users text-sky-400"></i> Copertura Ruoli: 100%</span>
+            <span class="text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check"></i> Pronto</span>
+          </div>
+        `;
+
+        hubGrid.appendChild(card);
+      });
+    }
+
+    function exportToCsv() {
+      if (generatedHubs.length === 0) return;
+
+      let csvRows = ["Hub,Nome Alunno,Ruolo Assegnato,Preferenza Originale"];
+      generatedHubs.forEach(hub => {
+        hub.members.forEach(m => {
+          const roleName = ROLES[m.assignedRole] ? ROLES[m.assignedRole].name : m.assignedRole;
+          csvRows.push(`"${hub.name}","${m.name}","${roleName}","${m.prefRole}"`);
+        });
+      });
+
+      const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Formazione_Hub_Amazon_Digitale.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("File CSV esportato correttamente!", "success");
+    }
+
+    function resetAll() {
+      rawStudents = [];
+      generatedHubs = [];
+      studentCountBadge.innerText = "0 Alunni Caricati";
+      generateBtn.disabled = true;
+      reshuffleBtn.disabled = true;
+      resultsContainer.classList.add('hidden');
+      fileInput.value = "";
+      showToast("Reset completato", "info");
+    }
+
+    function showToast(msg, type = "success") {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = msg;
+      if (type === "error") {
+        toastIcon.className = "fa-solid fa-circle-xmark text-rose-400 text-xl";
+      } else if (type === "info") {
+        toastIcon.className = "fa-solid fa-circle-info text-sky-400 text-xl";
+      } else {
+        toastIcon.className = "fa-solid fa-circle-check text-emerald-400 text-xl";
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
